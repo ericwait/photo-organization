@@ -31,7 +31,8 @@ def is_image(argument):
 	image_ext = {
 		'.jpg': True,
 		'.cr2': True,
-		'.dng': True
+		'.dng': True,
+		'.png': True
 	}
 	return image_ext.get(argument,False)
 
