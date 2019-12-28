@@ -16,14 +16,18 @@ import pygeocoder
 
 # %%
 if len(sys.argv) < 3:
-	sys.exit("Usage: organize.py source_path destination_path")
+	sys.exit("Usage: organize.py source_path destination_path [reorg_path]")
 
 input_dir = sys.argv[1]
 output_dir = sys.argv[2]
+if len(sys.argv) > 3:
+	reorg_dir = sys.argv[3]
+else:
+	reorg_dir = None
 
 filename, file_extension = os.path.splitext(input_dir)
 now = datetime.now()
-log_file = filename + now.strftime('%Y-%m-%d_%H-%M-%S') + '.log'
+log_file = os.path.join(filename,now.strftime('_%Y-%m-%d_%H-%M-%S') + '.log')
 print('stdout going to ' + log_file)
 sys.stdout = open(log_file,'w')
 
@@ -49,11 +53,22 @@ def is_image(argument):
 for root, dirs, files in os.walk(input_dir):
 	for f in files:
 		filename, file_extension = os.path.splitext(f)
+		cur_file = os.path.join(root,f)
+		
 		if not is_image(file_extension):
+			if file_extension == '.log':
+				print('Not touching log file')
+				continue
 			print('--Not reconized: ' + f)
+			if not (reorg_dir is None):
+				out_dir = os.path.join(reorg_dir,root[len(input_dir):len(root)])
+				if not os.path.exists(out_dir):
+					os.makedirs(out_dir)
+				new_file = os.path.join(out_dir,f)
+				print('\t Moving to: ' + new_file)
+				os.rename(cur_file,new_file)
 			continue
 
-		cur_file = os.path.join(root,f)
 		file_handle = open(cur_file,'rb')
 		
 		tags = exifread.process_file(file_handle)
@@ -61,6 +76,13 @@ for root, dirs, files in os.walk(input_dir):
 
 		if dt is None:
 			print('--No EXIF DateTime: ' + cur_file)
+			if not (reorg_dir is None):
+				out_dir = os.path.join(reorg_dir,root[len(input_dir):len(root)])
+				if not os.path.exists(out_dir):
+					os.makedirs(out_dir)
+				new_file = os.path.join(out_dir,f)
+				print('\t   Moving to: ' + new_file)
+				os.rename(cur_file,new_file)
 			continue
 
 		datetime_obj = datetime.strptime(str(dt), '%Y:%m:%d %H:%M:%S')
