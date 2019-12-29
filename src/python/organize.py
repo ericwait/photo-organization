@@ -40,9 +40,13 @@ print('Moving files: ', input_dir, ' --> ', output_dir)
 def is_image(argument):
 	image_ext = {
 		'.jpg': True,
+		'.JPG': True,
 		'.cr2': True,
+		'.CR2': True,
 		'.dng': True,
-		'.png': True
+		'.DNG': True,
+		'.png': True,
+		'.PNG': True
 	}
 	return image_ext.get(argument,False)
 
