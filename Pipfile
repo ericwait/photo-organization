@@ -4,14 +4,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
+ipykernel = "*"
 
 [packages]
+gpsphoto = "*"
 exifread = "*"
-jupyter = "*"
-ipython = "*"
-tqdm = "*"
+pillow = "*"
+piexif = "*"
 requests = "*"
 
 [requires]
-python_version = "3.5"
+python_version = "3.7"
