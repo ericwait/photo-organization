@@ -6,10 +6,11 @@
 import os
 import sys
 from datetime import datetime
+# from location import get_closest_city
+import re
 
 # %%
 import exifread
-import pygeocoder
 
 # %% [markdown]
 # ## Get directories from the user
@@ -25,11 +26,11 @@ if len(sys.argv) > 3:
 else:
 	reorg_dir = None
 
-filename, file_extension = os.path.splitext(input_dir)
-now = datetime.now()
-log_file = os.path.join(filename,now.strftime('_%Y-%m-%d_%H-%M-%S') + '.log')
-print('stdout going to ' + log_file)
-sys.stdout = open(log_file,'w')
+# filename, file_extension = os.path.splitext(input_dir)
+# now = datetime.now()
+# log_file = os.path.join(filename,now.strftime('_%Y-%m-%d_%H-%M-%S') + '.log')
+# print('stdout going to ' + log_file)
+# sys.stdout = open(log_file,'w')
 
 print('Moving files: ', input_dir, ' --> ', output_dir)
 
@@ -55,7 +56,15 @@ def is_image(argument):
 
 # %%
 for root, dirs, files in os.walk(input_dir):
+	if not (re.search('@',root) is None):
+		print('Found @ in ' + root)
+		continue
+
 	for f in files:
+		if not (re.search('@',f) is None):
+			print('Found @ in ' + f)
+			continue
+
 		filename, file_extension = os.path.splitext(f)
 		cur_file = os.path.join(root,f)
 		
@@ -129,5 +138,3 @@ for root, dirs, files in os.walk(input_dir, topdown=False):
 
 # %%
 print('Done')
-
-exit(0)
