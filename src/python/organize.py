@@ -49,13 +49,21 @@ def organize_photos(input_dir, output_dir):
                         if date_taken := tags.get('EXIF DateTimeOriginal'):
                             # Format the date and create new directory path
                             date_obj = datetime.strptime(str(date_taken), '%Y:%m:%d %H:%M:%S')
+                            file_extension = file_path.suffix.lower()
+                            new_file_name = date_obj.strftime('%Y-%m-%d_%H-%M-%S')
                             new_dir = output_dir / date_obj.strftime('%Y/%m/%d')
                             new_dir.mkdir(parents=True, exist_ok=True)
 
-                            # Move the file
-                            new_file_path = new_dir / filename
+                            # Check for duplicate file names
+                            new_file_path = new_dir / new_file_name
+                            counter = 1
+                            while new_file_path.exists():
+                                new_file_path = new_dir / f"{new_file_name}_{counter:03}{file_extension}"
+                                counter += 1
+
                             file_path.rename(new_file_path)
 
+                            # Log the file move
                             logging.info(f'Moved file from {file_path} to {new_file_path}')
                 except PermissionError as e:
                     logging.error(f'Permission denied for {file_path}: {e}')
