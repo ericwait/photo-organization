@@ -49,13 +49,21 @@ def organize_photos(input_dir, output_dir):
                         if date_taken := tags.get('EXIF DateTimeOriginal'):
                             # Format the date and create new directory path
                             date_obj = datetime.strptime(str(date_taken), '%Y:%m:%d %H:%M:%S')
+                            file_extension = file_path.suffix.lower()
+                            new_file_name = date_obj.strftime('%Y-%m-%d_%H-%M-%S')
                             new_dir = output_dir / date_obj.strftime('%Y/%m/%d')
                             new_dir.mkdir(parents=True, exist_ok=True)
 
-                            # Move the file
-                            new_file_path = new_dir / filename
+                            # Check for duplicate file names
+                            new_file_path = new_dir / f"{new_file_name}{file_extension}"
+                            counter = 1
+                            while new_file_path.exists():
+                                new_file_path = new_dir / f"{new_file_name}_{counter:03}{file_extension}"
+                                counter += 1
+
                             file_path.rename(new_file_path)
 
+                            # Log the file move
                             logging.info(f'Moved file from {file_path} to {new_file_path}')
                 except PermissionError as e:
                     logging.error(f'Permission denied for {file_path}: {e}')
@@ -67,6 +75,10 @@ def organize_photos(input_dir, output_dir):
 
 def cleanup_empty_dirs(base_dir):
     for root, dirs, files in os.walk(base_dir, topdown=False):
+        # Skip directories with '@' in the name
+        if '@' in root:
+            continue
+
         for dir_name in dirs:
             dir_path = Path(root) / dir_name
             if not os.listdir(dir_path):
@@ -78,8 +90,6 @@ def main():
     # Set up logging
     setup_logging('organize.log')
 
-    logging.info("Starting photo organization...")
-
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="Organize photos based on EXIF data.")
     parser.add_argument('source_path', type=str, help="Source directory containing photos")
@@ -88,13 +98,15 @@ def main():
 
     args = parser.parse_args()
 
+    logging.info(f'Starting photo organization from {args.source_path} to {args.destination_path}')
+
     # Call the main photo organizing function
     organize_photos(Path(args.source_path), Path(args.destination_path))
 
     # Optionally, clean up empty directories in the source after reorganizing
     cleanup_empty_dirs(Path(args.source_path))
 
-    print("Photo organization complete.")
+    logging.info("Photo organization complete.")
 
 
 if __name__ == "__main__":
