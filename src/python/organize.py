@@ -28,7 +28,7 @@ def setup_logging(log_file='organize.log', level=logging.INFO, max_size=10485760
 
 def is_image(file_path):
     # Define a set of common image file extensions
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.dng'}
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.dng', '.cr2'}
 
     # Check if the file extension is in the set of image extensions
     return file_path.suffix.lower() in image_extensions
