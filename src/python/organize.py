@@ -6,6 +6,7 @@ import exifread
 import os
 from logging.handlers import RotatingFileHandler
 
+
 def setup_logging(log_file='organize.log', level=logging.INFO, max_size=10485760, backups=3):
     # Create a rotating file handler
     handler = RotatingFileHandler(log_file, maxBytes=max_size, backupCount=backups)
@@ -26,9 +27,10 @@ def setup_logging(log_file='organize.log', level=logging.INFO, max_size=10485760
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
+
 def is_image(file_path):
     # Define a set of common image file extensions
-    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.dng', '.cr2'}
+    image_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.dng', '.cr2', '.nef', '.arw'}
 
     # Check if the file extension is in the set of image extensions
     return file_path.suffix.lower() in image_extensions
@@ -47,10 +49,20 @@ def organize_photos(input_dir, output_dir):
                     with open(file_path, 'rb') as file:
                         tags = exifread.process_file(file)
                         if date_taken := tags.get('EXIF DateTimeOriginal'):
-                            # Format the date and create new directory path
-                            date_obj = datetime.strptime(str(date_taken), '%Y:%m:%d %H:%M:%S')
+                            # Parse date with microseconds if present
+                            date_str = str(date_taken)
+
+                            try:
+                                # Try with microseconds first
+                                date_obj = datetime.strptime(date_str, '%Y:%m:%d %H:%M:%S.%f')
+                                # Format with microseconds (6 digits)
+                                new_file_name = date_obj.strftime('%Y-%m-%d_%H-%M-%S-%f')
+                            except ValueError:
+                                # Fall back to seconds only
+                                date_obj = datetime.strptime(date_str, '%Y:%m:%d %H:%M:%S')
+                                new_file_name = date_obj.strftime('%Y-%m-%d_%H-%M-%S')
+
                             file_extension = file_path.suffix.lower()
-                            new_file_name = date_obj.strftime('%Y-%m-%d_%H-%M-%S')
                             new_dir = output_dir / date_obj.strftime('%Y/%m/%d')
                             new_dir.mkdir(parents=True, exist_ok=True)
 
